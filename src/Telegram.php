@@ -163,14 +163,20 @@ class Telegram
     protected $last_update_id = null;
 
     /**
+     * Entity Manager
+     */
+    protected $em;
+
+    /**
      * Telegram constructor.
      *
      * @param string $api_key
      * @param string $bot_username
+     * @param $em
      *
      * @throws \Longman\TelegramBot\Exception\TelegramException
      */
-    public function __construct($api_key, $bot_username = '')
+    public function __construct($api_key, $bot_username = '', $em = null)
     {
         if (empty($api_key)) {
             throw new TelegramException('API KEY not defined!');
@@ -184,6 +190,10 @@ class Telegram
 
         if (!empty($bot_username)) {
             $this->bot_username = $bot_username;
+        }
+
+        if($em){
+            $this->em = $em;
         }
 
         //Add default system commands path
@@ -261,6 +271,9 @@ class Telegram
                     require_once $file->getPathname();
 
                     $command_obj = $this->getCommandObject($command, $file->getPathname());
+                    if(!stristr($path, 'Longman')){
+                        $command_obj->setEntityManager($this->em);
+                    }
                     if ($command_obj instanceof Command) {
                         $commands[$command_name] = $command_obj;
                     }
